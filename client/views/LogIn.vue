@@ -5,7 +5,7 @@
       <TextInput
         v-model="username"
         id="username"
-        placeholder="Username"
+        placeholder="Имя"
         class="mb-1"
         autocomplete="username"
         required
@@ -13,7 +13,7 @@
       <TextInput
         v-model="password"
         id="password"
-        placeholder="Password"
+        placeholder="Пароль"
         type="password"
         class="mb-1"
         autocomplete="current-password"
@@ -35,7 +35,7 @@
           v-model="rememberMe"
           class="mr-1"
         />
-        <label for="remember-me">Remember Me</label>
+        <label for="remember-me">Запомнить меня</label>
       </div>
       <CustomButton :iconPath="mdilLogin" label="Log In" />
     </form>
@@ -86,8 +86,8 @@ function logIn() {
       if (error.response?.status === 401) {
         toast.add(
           getToastOptions(
-            "Please check your credentials and try again.",
-            "Login Failed",
+            "Пожалуйста, проверьте свои учетные данные и попробуйте еще раз.",
+            "Не удалось войти в систему",
             "error",
           ),
         );
