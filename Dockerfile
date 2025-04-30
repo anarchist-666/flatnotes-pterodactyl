@@ -31,11 +31,12 @@ ENV PGID=1000
 ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
+ENV PYTHONPATH=/app
 
 ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
 
-# Create container user with home directory
+# Create container user with proper permissions
 RUN groupadd -g ${PGID} container && \
     useradd -u ${PUID} -g container -d /home/container -m container && \
     mkdir -p ${APP_PATH} && \
@@ -58,15 +59,19 @@ RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
 COPY --chown=container:container server ./server
-COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
+COPY --from=build --chmod=755 ${BUILD_DIR}/client/dist ./client/dist
+
+# Ensure the entrypoint can find the Python modules
+ENV PYTHONPATH="${PYTHONPATH}:${APP_PATH}"
 
 COPY entrypoint.sh healthcheck.sh /
-RUN chmod +x /entrypoint.sh /healthcheck.sh
+RUN chmod +x /entrypoint.sh /healthcheck.sh && \
+    chown container:container /entrypoint.sh /healthcheck.sh
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
 
 USER container
-WORKDIR /home/container
+WORKDIR ${APP_PATH}
 ENTRYPOINT [ "/entrypoint.sh" ]
