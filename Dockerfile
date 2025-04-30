@@ -31,19 +31,20 @@ ENV PGID=1000
 ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
-ENV PYTHONPATH=/app
 
 ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
+ENV CLIENT_PATH=/home/container/client
+ENV DOCS_PATH=/home/container/docs
+ENV SERVER_PATH=/home/container/server
 
-# Create container user with proper permissions
-RUN groupadd -g ${PGID} container && \
-    useradd -u ${PUID} -g container -d /home/container -m container && \
+# Создаем пользователя container с домашним каталогом /home/container
+RUN adduser -D -u 1000 -G users -h /home/container -s /bin/bash container && \
     mkdir -p ${APP_PATH} && \
     mkdir -p ${FLATNOTES_PATH} && \
-    chown -R container:container ${APP_PATH} && \
-    chown -R container:container ${FLATNOTES_PATH} && \
-    chmod -R 755 ${FLATNOTES_PATH}
+    mkdir -p ${CLIENT_PATH} && \
+    mkdir -p ${DOCS_PATH} && \
+    mkdir -p ${SERVER_PATH}
 
 RUN apt update && apt install -y \
     curl \
@@ -54,24 +55,24 @@ RUN pip install --no-cache-dir pipenv
 
 WORKDIR ${APP_PATH}
 
-COPY LICENSE Pipfile Pipfile.lock ./
+COPY LICENSE Pipfile Pipfile.lock ./ 
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
-COPY --chown=container:container server ./server
-COPY --from=build --chmod=755 ${BUILD_DIR}/client/dist ./client/dist
+COPY server ./server
+COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
+COPY docs ./docs
 
-# Ensure the entrypoint can find the Python modules
-ENV PYTHONPATH="${PYTHONPATH}:${APP_PATH}"
+COPY entrypoint.sh healthcheck.sh / 
+RUN chmod +x /entrypoint.sh /healthcheck.sh
 
-COPY entrypoint.sh healthcheck.sh /
-RUN chmod +x /entrypoint.sh /healthcheck.sh && \
-    chown container:container /entrypoint.sh /healthcheck.sh
+# Устанавливаем владельца всех нужных директорий на пользователя container
+RUN chown -R container:container /home/container /app /data /home/container/client /home/container/docs /home/container/server
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
 
 USER container
-WORKDIR ${APP_PATH}
+
 ENTRYPOINT [ "/entrypoint.sh" ]
