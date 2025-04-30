@@ -1,6 +1,6 @@
 ARG BUILD_DIR=/build
 
-# Build Container
+# Build Stage
 FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
 ARG BUILD_DIR
@@ -19,56 +19,53 @@ RUN npm ci
 COPY client ./client
 RUN npm run build
 
-# Runtime Container
+# Runtime Stage
 FROM python:3.11-slim-bullseye
 
 ARG BUILD_DIR
 
-# Set environment variables expected by flatnotes
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
 ENV APP_PATH=/home/container
 ENV FLATNOTES_PATH=/home/container/data
 ENV EXEC_TOOL=gosu
 
-# Create the required directories
-RUN mkdir -p /home/container /home/container/data
+# Создание нужных директорий
+RUN mkdir -p ${APP_PATH} ${FLATNOTES_PATH}
 
-# Create user 'container' with home directory /home/container
-RUN useradd -m -d /home/container -u 1000 -s /bin/bash container
-
-# Install dependencies
+# Установка зависимостей
 RUN apt update && apt install -y \
     curl \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Установка Python-зависимостей
 RUN pip install --no-cache-dir pipenv
 
-# Set working directory
-WORKDIR /home/container
+# Создание пользователя container с домашней директорией
+RUN useradd -m -d /home/container -u 1000 -s /bin/bash container
 
-# Copy necessary files
+WORKDIR ${APP_PATH}
+
 COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
-COPY entrypoint.sh healthcheck.sh /home/container/
 
-# Make entrypoints executable
-RUN chmod +x /home/container/entrypoint.sh /home/container/healthcheck.sh
+# Копирование скриптов в корень, не в /home/container
+COPY entrypoint.sh healthcheck.sh /entrypoint.sh /healthcheck.sh
+RUN chmod +x /entrypoint.sh /healthcheck.sh
 
-# Change ownership to the 'container' user
-RUN chown -R container:container /home/container
+# Выдача прав
+RUN chown -R container:container ${APP_PATH}
 
-# Switch to non-root user
+# Переключение на пользователя container
 USER container
 
+# Настройки Pterodactyl
 VOLUME /home/container/data
 EXPOSE ${FLATNOTES_PORT}/tcp
-HEALTHCHECK --interval=60s --timeout=10s CMD /home/container/healthcheck.sh
-
-ENTRYPOINT [ "/home/container/entrypoint.sh" ]
+HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
+ENTRYPOINT ["/entrypoint.sh"]
