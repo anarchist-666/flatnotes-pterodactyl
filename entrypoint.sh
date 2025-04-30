@@ -25,6 +25,8 @@ It would really make my day 🙏.
 
 ──────────────────────────────────────
 "
+mkdir -p /data/.flatnotes
+chown -R $(id -u):$(id -g) /data
 
 flatnotes_command="python -m \
                   uvicorn \
