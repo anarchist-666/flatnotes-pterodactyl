@@ -20,6 +20,10 @@ RUN npm ci
 
 COPY client ./client
 RUN npm run build
+
+RUN addgroup --gid 1000 container && \
+    adduser --disabled-password --gecos "" --uid 1000 --gid 1000 container
+
 USER container
 ENV  USER=container HOME=/home/container
 
@@ -30,8 +34,8 @@ FROM python:3.11-slim-bullseye
 
 ARG BUILD_DIR
 
-ENV PUID=998
-ENV PGID=998
+ENV PUID=1000
+ENV PGID=1000
 ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
