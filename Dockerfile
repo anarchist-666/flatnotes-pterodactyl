@@ -63,8 +63,9 @@ COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 COPY entrypoint.sh healthcheck.sh / 
 RUN chmod +x /entrypoint.sh /healthcheck.sh
 
-# Устанавливаем владельца всех нужных директорий на пользователя container
-RUN chown -R container:container /home/container /app /data /home/container/client /home/container/server
+# Убедимся, что каталоги существуют и затем установим владельца
+RUN mkdir -p /home/container/client /home/container/server /app /data && \
+    chown -R container:container /home/container /app /data /home/container/client /home/container/server
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
