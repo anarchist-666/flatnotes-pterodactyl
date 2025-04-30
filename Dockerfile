@@ -1,12 +1,11 @@
 # Build Container
 FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
-ARG BUILD_DIR
+ARG BUILD_DIR=/build
 
 RUN mkdir ${BUILD_DIR}
 WORKDIR ${BUILD_DIR}
 
-# Copy configuration files
 COPY .htmlnanorc \
     package.json \
     package-lock.json \
@@ -15,10 +14,8 @@ COPY .htmlnanorc \
     vite.config.js \
     ./
 
-# Install dependencies
 RUN npm ci
 
-# Copy client code and build
 COPY client ./client
 RUN npm run build
 
@@ -27,55 +24,49 @@ FROM python:3.11-slim-bullseye
 
 ARG BUILD_DIR
 
-# Set environment variables
 ENV PUID=1000
 ENV PGID=1000
 ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
-ENV APP_PATH=/app
-ENV FLATNOTES_PATH=/data
 
-# Create the container user and its home directory
-RUN adduser --disabled-password --home /home/container --gecos "" container
+ENV APP_PATH=/home/container/app
+ENV FLATNOTES_PATH=/home/container/data
 
-# Set the user to "container"
-USER container
-ENV USER=container HOME=/home/container
+# Создаем пользователя container с домашним каталогом /home/container
+RUN useradd -m -d /home/container container
 
-# Create necessary directories
+# Создаем необходимые каталоги
 RUN mkdir -p ${APP_PATH} ${FLATNOTES_PATH}
 
-# Install dependencies for runtime environment
 RUN apt update && apt install -y \
     curl \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pipenv for Python dependency management
 RUN pip install --no-cache-dir pipenv
 
-# Set the working directory
 WORKDIR ${APP_PATH}
 
-# Copy and install server dependencies
+# Копируем все файлы в /home/container
 COPY LICENSE Pipfile Pipfile.lock ./
-RUN pipenv install --deploy --ignore-pipfile --system && pipenv --clear
+RUN pipenv install --deploy --ignore-pipfile --system && \
+    pipenv --clear
 
-# Copy server and build assets
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
-# Copy entrypoint and healthcheck scripts
-COPY entrypoint.sh healthcheck.sh / 
-RUN chmod +x /entrypoint.sh /healthcheck.sh
+COPY entrypoint.sh healthcheck.sh /home/container/
+RUN chmod +x /home/container/entrypoint.sh /home/container/healthcheck.sh
 
-# Expose the volume and port
-VOLUME /data
+# Устанавливаем владельца каталогов
+RUN chown -R container:container /home/container
+
+# Устанавливаем пользователя container
+USER container
+
+VOLUME /home/container/data
 EXPOSE ${FLATNOTES_PORT}/tcp
+HEALTHCHECK --interval=60s --timeout=10s CMD /home/container/healthcheck.sh
 
-# Define health check
-HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
-
-# Set the entrypoint for the container
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "entrypoint.sh" ]
