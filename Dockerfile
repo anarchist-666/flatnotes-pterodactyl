@@ -20,6 +20,10 @@ RUN npm ci
 
 COPY client ./client
 RUN npm run build
+USER container
+ENV  USER=container HOME=/home/container
+
+WORKDIR /home/container
 
 # Runtime Container
 FROM python:3.11-slim-bullseye
@@ -60,5 +64,9 @@ RUN chmod +x /entrypoint.sh /healthcheck.sh
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
+USER container
+ENV  USER=container HOME=/home/container
+
+WORKDIR /home/container
 
 ENTRYPOINT [ "/entrypoint.sh" ]
