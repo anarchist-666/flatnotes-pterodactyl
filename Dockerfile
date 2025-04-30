@@ -4,7 +4,6 @@ ARG BUILD_DIR=/build
 FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
 ARG BUILD_DIR
-
 RUN mkdir ${BUILD_DIR}
 WORKDIR ${BUILD_DIR}
 
@@ -17,7 +16,6 @@ COPY .htmlnanorc \
     ./
 
 RUN npm ci
-
 COPY client ./client
 RUN npm run build
 
@@ -26,39 +24,51 @@ FROM python:3.11-slim-bullseye
 
 ARG BUILD_DIR
 
-ENV PUID=1000
-ENV PGID=1000
-ENV EXEC_TOOL=gosu
+# Set environment variables expected by flatnotes
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
+ENV APP_PATH=/home/container
+ENV FLATNOTES_PATH=/home/container/data
+ENV EXEC_TOOL=gosu
 
-ENV APP_PATH=/app
-ENV FLATNOTES_PATH=/data
+# Create the required directories
+RUN mkdir -p /home/container /home/container/data
 
-RUN mkdir -p ${APP_PATH}
-RUN mkdir -p ${FLATNOTES_PATH}
+# Create user 'container' with home directory /home/container
+RUN useradd -m -d /home/container -u 1000 -s /bin/bash container
 
+# Install dependencies
 RUN apt update && apt install -y \
     curl \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
 RUN pip install --no-cache-dir pipenv
 
-WORKDIR ${APP_PATH}
+# Set working directory
+WORKDIR /home/container
 
+# Copy necessary files
 COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
+COPY entrypoint.sh healthcheck.sh /home/container/
 
-COPY entrypoint.sh healthcheck.sh /
-RUN chmod +x /entrypoint.sh /healthcheck.sh
+# Make entrypoints executable
+RUN chmod +x /home/container/entrypoint.sh /home/container/healthcheck.sh
 
-VOLUME /data
+# Change ownership to the 'container' user
+RUN chown -R container:container /home/container
+
+# Switch to non-root user
+USER container
+
+VOLUME /home/container/data
 EXPOSE ${FLATNOTES_PORT}/tcp
-HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
+HEALTHCHECK --interval=60s --timeout=10s CMD /home/container/healthcheck.sh
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/home/container/entrypoint.sh" ]
