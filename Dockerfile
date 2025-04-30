@@ -21,8 +21,7 @@ RUN npm ci
 COPY client ./client
 RUN npm run build
 
-RUN addgroup --gid 1000 container && \
-    adduser --disabled-password --gecos "" --uid 1000 --gid 1000 container
+RUN adduser --disabled-password --home /home/container container
 
 USER container
 ENV  USER=container HOME=/home/container
