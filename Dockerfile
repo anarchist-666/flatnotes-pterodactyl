@@ -30,8 +30,8 @@ ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
 
-ENV APP_PATH=/home/container/app
-ENV FLATNOTES_PATH=/home/container/data
+ENV APP_PATH=/app
+ENV FLATNOTES_PATH=/data
 
 # Создаем пользователя container с домашним каталогом /home/container
 RUN useradd -m -d /home/container container
@@ -48,25 +48,24 @@ RUN pip install --no-cache-dir pipenv
 
 WORKDIR ${APP_PATH}
 
-# Копируем все файлы в /home/container
-COPY LICENSE Pipfile Pipfile.lock ./
+COPY LICENSE Pipfile Pipfile.lock ./ 
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
-COPY entrypoint.sh healthcheck.sh /home/container/
-RUN chmod +x /home/container/entrypoint.sh /home/container/healthcheck.sh
+COPY entrypoint.sh healthcheck.sh / 
+RUN chmod +x /entrypoint.sh /healthcheck.sh
 
 # Устанавливаем владельца каталогов
-RUN chown -R container:container /home/container
+RUN chown -R container:container /home/container /app /data
 
 # Устанавливаем пользователя container
 USER container
 
-VOLUME /home/container/data
+VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
-HEALTHCHECK --interval=60s --timeout=10s CMD /home/container/healthcheck.sh
+HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
