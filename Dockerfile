@@ -39,7 +39,7 @@ ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
 
 ENV APP_PATH=/app
-ENV FLATNOTES_PATH=/data
+ENV FLATNOTES_PATH=/home/container/data
 
 # Создаем необходимые директории
 RUN mkdir -p ${APP_PATH} ${FLATNOTES_PATH}
