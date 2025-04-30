@@ -34,14 +34,12 @@ FROM python:3.11-slim-bullseye
 
 ARG BUILD_DIR
 
-ENV PUID=998
-ENV PGID=998
 ENV EXEC_TOOL=gosu
 ENV FLATNOTES_HOST=0.0.0.0
 ENV FLATNOTES_PORT=8080
 
 ENV APP_PATH=/app
-ENV FLATNOTES_PATH=/home/container/data
+ENV FLATNOTES_PATH=/data
 
 # Создаем необходимые директории
 RUN mkdir -p ${APP_PATH} ${FLATNOTES_PATH}
@@ -74,7 +72,7 @@ COPY entrypoint.sh healthcheck.sh /
 RUN chmod +x /entrypoint.sh /healthcheck.sh
 
 # Контейнерная директория и порты
-VOLUME /home/container/data
+VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 
 # Здоровье и пользователь
