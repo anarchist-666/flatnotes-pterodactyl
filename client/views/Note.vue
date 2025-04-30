@@ -2,9 +2,9 @@
   <!-- Confirm Deletion Modal -->
   <ConfirmModal
     v-model="isDeleteModalVisible"
-    title="Confirm Deletion"
-    :message="`Are you sure you want to delete the note '${note.title}'?`"
-    confirmButtonText="Delete"
+    title="Подтвердите Удаление"
+    :message="`Вы уверены, что хотите удалить заметку '${note.title}'?`"
+    confirmButtonText="Удалить"
     confirmButtonStyle="danger"
     @confirm="deleteConfirmedHandler"
   />
@@ -12,11 +12,11 @@
   <!-- Save Changes Modal -->
   <ConfirmModal
     v-model="isSaveChangesModalVisible"
-    title="Save Changes"
-    message="Do you want to save your changes?"
-    confirmButtonText="Save"
+    title="Сохранение изменений"
+    message="Вы хотите сохранить внесенные изменения?"
+    confirmButtonText="Сохранить"
     confirmButtonStyle="success"
-    rejectButtonText="Discard"
+    rejectButtonText="Отменить"
     rejectButtonStyle="danger"
     @confirm="saveHandler((close = true))"
     @reject="closeNote"
@@ -25,8 +25,8 @@
   <!-- Draft Modal -->
   <ConfirmModal
     v-model="isDraftModalVisible"
-    title="Draft Detected"
-    message="There is an unsaved draft of this note stored in this browser. Do you want to resume the draft version or delete it?"
+    title="Найден черновик"
+    message="В этом браузере сохранён несохранённый черновик этой заметки. Вы хотите восстановить черновик или удалить его?"
     confirmButtonText="Resume Draft"
     confirmButtonStyle="cta"
     rejectButtonText="Delete Draft"
@@ -57,14 +57,14 @@
         <!-- Delete Button -->
         <CustomButton
           v-show="canModify && !isNewNote"
-          label="Delete"
+          label="Удалить"
           :iconPath="mdilDelete"
           @click="deleteHandler"
         />
         <!-- Save Button -->
         <CustomButton
           v-show="editMode"
-          label="Save"
+          label="Сохранить"
           :iconPath="mdilContentSave"
           @click="saveHandler((close = false))"
           class="relative ml-1"
@@ -78,7 +78,7 @@
         <!-- Edit Toggle -->
         <Toggle
           v-if="canModify"
-          label="Edit"
+          label="Редактировать"
           :isOn="editMode"
           class="ml-1"
           @click="toggleEditModeHandler"
