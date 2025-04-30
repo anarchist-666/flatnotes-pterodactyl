@@ -45,6 +45,7 @@ if [ `id -u` -eq 0 ] && [ `id -g` -eq 0 ]; then
 
 else
     echo "A user was set by docker, skipping file permission changes."
+    echo $UID
     echo Starting flatnotes as user $(id -u)...
     exec ${flatnotes_command}
 fi
