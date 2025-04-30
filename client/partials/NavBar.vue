@@ -12,7 +12,7 @@
       <CustomButton
         class="ml-1"
         :iconPath="mdilMenu"
-        label="Menu"
+        label="Меню"
         @click="toggleMenu"
       />
       <PrimeMenu ref="menu" :model="menuItems" :popup="true" />
@@ -52,13 +52,13 @@ const emit = defineEmits(["toggleSearchModal"]);
 
 const menuItems = [
   {
-    label: "Search",
+    label: "Поиск",
     icon: mdilMagnify,
     command: () => emit("toggleSearchModal"),
     keyboardShortcut: "/",
   },
   {
-    label: "All Notes",
+    label: "Все заметки",
     icon: mdilNoteMultiple,
     command: () =>
       router.push({
@@ -70,7 +70,7 @@ const menuItems = [
       }),
   },
   {
-    label: "Toggle Theme",
+    label: "Переключить Тему",
     icon: mdilMonitor,
     command: toggleTheme,
   },
@@ -79,7 +79,7 @@ const menuItems = [
     visible: showLogOutButton,
   },
   {
-    label: "Log Out",
+    label: "Выход",
     icon: mdilLogout,
     command: logOut,
     visible: showLogOutButton,
