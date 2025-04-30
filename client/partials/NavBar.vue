@@ -6,7 +6,7 @@
     <div class="flex grow items-start justify-end">
       <!-- New Note -->
       <RouterLink v-if="showNewButton" :to="{ name: 'new' }">
-        <CustomButton :iconPath="mdilPlusCircle" label="New Note" />
+        <CustomButton :iconPath="mdilPlusCircle" label="Новая Заметка" />
       </RouterLink>
       <!-- Menu -->
       <CustomButton
