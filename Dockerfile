@@ -42,7 +42,6 @@ RUN adduser -D -u 1000 -G users -h /home/container -s /bin/bash container && \
     mkdir -p ${APP_PATH} && \
     mkdir -p ${FLATNOTES_PATH} && \
     mkdir -p ${CLIENT_PATH} && \
-    mkdir -p ${DOCS_PATH} && \
     mkdir -p ${SERVER_PATH}
 
 RUN apt update && apt install -y \
