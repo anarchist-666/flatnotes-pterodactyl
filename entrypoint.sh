@@ -25,7 +25,7 @@ It would really make my day 🙏.
 
 ──────────────────────────────────────
 "
-export FLATNOTES_DATA_DIR=/home/container/.flatnotes
+export FLATNOTES_DATA_DIR=/home/container/data/.flatnotes
 
 mkdir -p "$FLATNOTES_DATA_DIR"
 
