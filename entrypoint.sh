@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ ! -f /home/container/server/main.py ]; then
+    echo "Copying files to /home/container..."
+    cp -r /app/* /home/container/
+fi
+
 [ "$EXEC_TOOL" ] || EXEC_TOOL=gosu
 [ "$FLATNOTES_HOST" ] || FLATNOTES_HOST=0.0.0.0
 [ "$FLATNOTES_PORT" ] || FLATNOTES_PORT=8080
