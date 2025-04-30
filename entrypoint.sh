@@ -26,8 +26,6 @@ It would really make my day 🙏.
 
 ──────────────────────────────────────
 "
-mkdir -p /home/container/data/.flatnotes
-chown -R 998:998 /home/container
 
 flatnotes_command="python -m \
                   uvicorn \
