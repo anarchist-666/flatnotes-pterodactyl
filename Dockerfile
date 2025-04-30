@@ -65,7 +65,7 @@ COPY entrypoint.sh healthcheck.sh /
 RUN chmod +x /entrypoint.sh /healthcheck.sh
 
 # Устанавливаем владельца всех нужных директорий на пользователя container
-RUN chown -R container:container /home/container /app /data /home/container/client /home/container/docs /home/container/server
+RUN chown -R container:container /home/container /app /data /home/container/client /home/container/server
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
