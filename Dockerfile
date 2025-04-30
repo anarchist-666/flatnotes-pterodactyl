@@ -41,8 +41,8 @@ ENV SERVER_PATH=/home/container/server
 RUN adduser -D -u 1000 -G users -h /home/container -s /bin/bash container && \
     mkdir -p ${APP_PATH} && \
     mkdir -p ${FLATNOTES_PATH} && \
-    mkdir -p ${CLIENT_PATH} && \
-    mkdir -p ${SERVER_PATH}
+    mkdir -p /home/container/client && \
+    mkdir -p /home/container/server
 
 RUN apt update && apt install -y \
     curl \
@@ -57,20 +57,20 @@ COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
-COPY server ./server
-COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
+# Копируем содержимое client и server из репозитория в нужные директории
+COPY client /home/container/client
+COPY server /home/container/server
+
+# Устанавливаем права на каталоги и файлы
+RUN chown -R container:container /home/container /app /data /home/container/client /home/container/server
 
 COPY entrypoint.sh healthcheck.sh / 
 RUN chmod +x /entrypoint.sh /healthcheck.sh
 
-# Убедимся, что каталоги существуют и затем установим владельца
-RUN mkdir -p /home/container/client /home/container/server /app /data && \
-    chown -R container:container /home/container /app /data /home/container/client /home/container/server
+USER container
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
-
-USER container
 
 ENTRYPOINT [ "/entrypoint.sh" ]
