@@ -21,7 +21,7 @@ RUN npm ci
 COPY client ./client
 RUN npm run build
 
-RUN adduser --disabled-password --home /home/container --uid 1000 container
+RUN adduser --disabled-password --home /home/container container
 
 USER container
 ENV  USER=container HOME=/home/container
