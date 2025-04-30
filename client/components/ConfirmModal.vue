@@ -42,9 +42,9 @@ const props = defineProps({
   title: { type: String, default: "Confirmation" },
   message: String,
   confirmButtonStyle: { type: String, default: "cta" },
-  confirmButtonText: { type: String, default: "Confirm" },
+  confirmButtonText: { type: String, default: "Потвердить" },
   cancelButtonStyle: { type: String, default: "subtle" },
-  cancelButtonText: { type: String, default: "Cancel" },
+  cancelButtonText: { type: String, default: "Отмена" },
   rejectButtonStyle: { type: String, default: "danger" },
   rejectButtonText: { type: String },
 });
