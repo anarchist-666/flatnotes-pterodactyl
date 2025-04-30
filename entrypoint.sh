@@ -1,10 +1,18 @@
 #!/bin/sh
 
-# Проверка наличия файлов и копирование их в домашнюю директорию контейнера
+# Проверка и создание данных
 if [ ! -f /home/container/server/main.py ]; then
     echo "Copying files to /home/container..."
     cp -r /app/* /home/container/
 fi
+
+# Проверка прав на директорию
+if [ ! -w "${FLATNOTES_PATH}" ]; then
+    echo "WARNING: No write access to ${FLATNOTES_PATH} for UID $(id -u)"
+    ls -ld "${FLATNOTES_PATH}"
+    exit 1
+fi
+
 cd /home/container
 
 [ "$EXEC_TOOL" ] || EXEC_TOOL=gosu
