@@ -38,8 +38,7 @@ flatnotes_command="python -m \
 
 
     echo Setting file permissions...
-    chown -R ${PUID}:${PGID} ${FLATNOTES_PATH}
-
     echo Starting flatnotes as user ${PUID}...
+    chown -R ${PUID}:${PGID} ${FLATNOTES_PATH}
     exec ${EXEC_TOOL} ${PUID}:${PGID} ${flatnotes_command}
 fi
