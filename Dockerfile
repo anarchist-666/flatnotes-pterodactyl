@@ -36,12 +36,13 @@ ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
 
 # Create container user with home directory
-RUN groupadd -g 1000 container && \
-    useradd -u 1000 -g container -d /home/container -m container && \
+RUN groupadd -g ${PGID} container && \
+    useradd -u ${PUID} -g container -d /home/container -m container && \
     mkdir -p ${APP_PATH} && \
     mkdir -p ${FLATNOTES_PATH} && \
-    chown container:container ${APP_PATH} && \
-    chown container:container ${FLATNOTES_PATH}
+    chown -R container:container ${APP_PATH} && \
+    chown -R container:container ${FLATNOTES_PATH} && \
+    chmod -R 755 ${FLATNOTES_PATH}
 
 RUN apt update && apt install -y \
     curl \
@@ -56,7 +57,7 @@ COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
-COPY server ./server
+COPY --chown=container:container server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
 COPY entrypoint.sh healthcheck.sh /
@@ -67,4 +68,5 @@ EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
 
 USER container
+WORKDIR /home/container
 ENTRYPOINT [ "/entrypoint.sh" ]
