@@ -26,6 +26,8 @@ It would really make my day 🙏.
 
 ──────────────────────────────────────
 "
+mkdir -p /home/container/data/.flatnotes
+chown -R 998:998 /home/container
 
 flatnotes_command="python -m \
                   uvicorn \
@@ -45,7 +47,6 @@ if [ `id -u` -eq 0 ] && [ `id -g` -eq 0 ]; then
 
 else
     echo "A user was set by docker, skipping file permission changes."
-    echo $UID
     echo Starting flatnotes as user $(id -u)...
     exec ${flatnotes_command}
 fi
