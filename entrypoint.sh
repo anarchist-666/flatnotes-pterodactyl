@@ -1,11 +1,12 @@
 #!/bin/sh
 
+# Проверка наличия файлов и копирование их в домашнюю директорию контейнера
 if [ ! -f /home/container/server/main.py ]; then
     echo "Copying files to /home/container..."
     cp -r /app/* /home/container/
 fi
 
-[ "$EXEC_TOOL" ] || EXEC_TOOL=gosu
+# Переменные по умолчанию
 [ "$FLATNOTES_HOST" ] || FLATNOTES_HOST=0.0.0.0
 [ "$FLATNOTES_PORT" ] || FLATNOTES_PORT=8080
 
@@ -25,9 +26,12 @@ It would really make my day 🙏.
 
 ──────────────────────────────────────
 "
-mkdir -p /home/container/data/.flatnotes
-chown -R 1000:1000 /home/container/data
 
+# Убедимся, что каталоги для Flatnotes существуют и принадлежат правильному пользователю
+mkdir -p /home/container/data/.flatnotes
+chown -R 1000:1000 /home/container
+
+# Команда для запуска приложения
 flatnotes_command="python -m \
                   uvicorn \
                   main:app \
@@ -37,15 +41,6 @@ flatnotes_command="python -m \
                   --proxy-headers \
                   --forwarded-allow-ips '*'"
 
-if [ `id -u` -eq 0 ] && [ `id -g` -eq 0 ]; then
-    echo Setting file permissions...
-    chown -R ${PUID}:${PGID} ${FLATNOTES_PATH}
-
-    echo Starting flatnotes as user ${PUID}...
-    exec ${EXEC_TOOL} ${PUID}:${PGID} ${flatnotes_command}
-
-else
-    echo "A user was set by docker, skipping file permission changes."
-    echo Starting flatnotes as user $(id -u)...
-    exec ${flatnotes_command}
-fi
+# Запуск от имени пользователя container (UID=1000)
+echo "Starting flatnotes as user $(id -u)..."
+exec su-exec container ${flatnotes_command}
