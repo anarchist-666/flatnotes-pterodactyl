@@ -56,7 +56,6 @@ COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
 # Копирование скриптов в корень, не в /home/container
 COPY entrypoint.sh healthcheck.sh /entrypoint.sh /healthcheck.sh
-RUN chmod +x /entrypoint.sh /healthcheck.sh
 
 # Выдача прав
 RUN chown -R container:container ${APP_PATH}
