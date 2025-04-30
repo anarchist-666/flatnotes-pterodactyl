@@ -35,7 +35,6 @@ ENV FLATNOTES_PORT=8080
 ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
 ENV CLIENT_PATH=/home/container/client
-ENV DOCS_PATH=/home/container/docs
 ENV SERVER_PATH=/home/container/server
 
 # Создаем пользователя container с домашним каталогом /home/container
@@ -61,7 +60,6 @@ RUN pipenv install --deploy --ignore-pipfile --system && \
 
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
-COPY docs ./docs
 
 COPY entrypoint.sh healthcheck.sh / 
 RUN chmod +x /entrypoint.sh /healthcheck.sh
