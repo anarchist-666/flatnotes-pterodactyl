@@ -34,15 +34,9 @@ ENV FLATNOTES_PORT=8080
 
 ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
-ENV CLIENT_PATH=/home/container/client
-ENV SERVER_PATH=/home/container/server
 
-# Создаем пользователя container с домашним каталогом /home/container
-RUN adduser -D -u 1000 -G users -h /home/container -s /bin/bash container && \
-    mkdir -p ${APP_PATH} && \
-    mkdir -p ${FLATNOTES_PATH} && \
-    mkdir -p /home/container/client && \
-    mkdir -p /home/container/server
+RUN mkdir -p ${APP_PATH}
+RUN mkdir -p ${FLATNOTES_PATH}
 
 RUN apt update && apt install -y \
     curl \
@@ -53,21 +47,15 @@ RUN pip install --no-cache-dir pipenv
 
 WORKDIR ${APP_PATH}
 
-COPY LICENSE Pipfile Pipfile.lock ./ 
+COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
-# Копируем содержимое client и server из репозитория в нужные директории
-COPY client /home/container/client
-COPY server /home/container/server
+COPY server ./server
+COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
-# Устанавливаем права на каталоги и файлы
-RUN chown -R container:container /home/container /app /data /home/container/client /home/container/server
-
-COPY entrypoint.sh healthcheck.sh / 
+COPY entrypoint.sh healthcheck.sh /
 RUN chmod +x /entrypoint.sh /healthcheck.sh
-
-USER container
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
