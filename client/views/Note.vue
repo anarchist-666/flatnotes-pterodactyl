@@ -27,9 +27,9 @@
     v-model="isDraftModalVisible"
     title="Найден черновик"
     message="В этом браузере сохранён несохранённый черновик этой заметки. Вы хотите восстановить черновик или удалить его?"
-    confirmButtonText="Resume Draft"
+    confirmButtonText="Открыть Черновик"
     confirmButtonStyle="cta"
-    rejectButtonText="Delete Draft"
+    rejectButtonText="Удалить черновик"
     rejectButtonStyle="danger"
     @confirm="setEditMode()"
     @reject="
@@ -183,7 +183,7 @@ function init() {
       })
       .catch((error) => {
         if (error.response?.status === 404) {
-          loadingIndicator.value.setFailed("Note not found", mdiNoteOffOutline);
+          loadingIndicator.value.setFailed("Заметка не найдена", mdiNoteOffOutline);
         } else {
           loadingIndicator.value.setFailed();
           apiErrorHandler(error, toast);
@@ -240,7 +240,7 @@ function deleteHandler() {
 function deleteConfirmedHandler() {
   deleteNote(note.value.title)
     .then(() => {
-      toast.add(getToastOptions("Note deleted ✓", "Success", "success"));
+      toast.add(getToastOptions("Заметка удалена ✓", "Успех", "success"));
       router.push({ name: "home" });
     })
     .catch((error) => {
@@ -256,7 +256,7 @@ function saveHandler(close = false) {
   // Empty Title Validation
   if (!newTitle.value) {
     toast.add(
-      getToastOptions("Cannot save note without a title.", "Invalid", "error"),
+      getToastOptions("Невозможно сохранить заметку без заголовка.", "Ошибка", "error"),
     );
     return;
   }
@@ -316,8 +316,8 @@ function noteSaveFailure(error) {
   if (error.response?.status === 409) {
     toast.add(
       getToastOptions(
-        "A note with this title already exists. Please try again with a new title.",
-        "Duplicate",
+        "Заметка с таким названием уже существует. Пожалуйста, повторите попытку с новым названием.",
+        "Дубликат",
         "error",
       ),
     );
@@ -334,7 +334,7 @@ function noteSaveSuccess(close = false) {
     closeNote();
   }
   setBeforeUnloadConfirmation(false);
-  toast.add(getToastOptions("Note saved successfully ✓", "Success", "success"));
+  toast.add(getToastOptions("Заметка успешно сохранена ✓", "Успех", "success"));
 }
 
 // Note Closure
@@ -380,7 +380,7 @@ function postAttachment(file) {
   }
 
   // Uploading Toast
-  toast.add(getToastOptions("Uploading attachment..."));
+  toast.add(getToastOptions("Загружаем вложение..."));
 
   // Upload the attachment
   return createAttachment(file)
@@ -388,8 +388,8 @@ function postAttachment(file) {
       // Success Toast
       toast.add(
         getToastOptions(
-          "Attachment uploaded successfully ✓",
-          "Success",
+          "Вложение успешно загружено ✓",
+          "Успех",
           "success",
         ),
       );
@@ -401,8 +401,8 @@ function postAttachment(file) {
         // Error Toast
         toast.add(
           getToastOptions(
-            "An attachment with this filename already exists.",
-            "Duplicate",
+            "Вложение с таким именем файла уже существует.",
+            "Дубликат",
             "error",
           ),
         );
@@ -477,8 +477,8 @@ function keydownHandler(event) {
 function entityTooLargeToast(entityName) {
   toast.add(
     getToastOptions(
-      `This ${entityName} is too large. Please try again with a smaller ${entityName} or adjust your server configuration.`,
-      "Failure",
+      `Этот ${entityName} слишком большой. Пожалуйста, повторите попытку с меньшим ${entityName} или измените конфигурацию сервера.`,
+      "Неудача",
       "error",
     ),
   );
@@ -487,8 +487,8 @@ function entityTooLargeToast(entityName) {
 function badFilenameToast(entityName) {
   toast.add(
     getToastOptions(
-      'Due to filename restrictions, the following characters are not allowed: <>:"/\\|?*',
-      `Invalid ${entityName}`,
+      'Из-за ограничений на имя файла следующие символы не допускаются: <>:"/\\|?*',
+      `Неудача ${entityName}`,
       "error",
     ),
   );
