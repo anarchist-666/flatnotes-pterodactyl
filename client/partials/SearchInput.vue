@@ -57,7 +57,7 @@ import { getToastOptions } from "../helpers.js";
 const props = defineProps({
   initialSearchTerm: { type: String, default: "" },
   large: Boolean,
-  placeholder: { type: String, default: "Search..." },
+  placeholder: { type: String, default: "Поиск..." },
 });
 const emit = defineEmits(["search"]);
 
@@ -113,7 +113,7 @@ function search() {
     });
     emit("search");
   } else {
-    toast.add(getToastOptions("Please enter a search term.", "Error", "error"));
+    toast.add(getToastOptions("Пожалуйста, введите поисковый запрос.", "Error", "error"));
   }
 }
 
