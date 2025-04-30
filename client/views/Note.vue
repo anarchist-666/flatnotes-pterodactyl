@@ -16,7 +16,7 @@
     message="Вы хотите сохранить внесенные изменения?"
     confirmButtonText="Сохранить"
     confirmButtonStyle="success"
-    rejectButtonText="Отменить"
+    rejectButtonText="НЕ Сохранять"
     rejectButtonStyle="danger"
     @confirm="saveHandler((close = true))"
     @reject="closeNote"
