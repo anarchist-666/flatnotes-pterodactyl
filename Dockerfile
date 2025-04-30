@@ -1,7 +1,9 @@
+ARG BUILD_DIR=/build
+
 # Build Container
 FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
-ARG BUILD_DIR=/build
+ARG BUILD_DIR
 
 RUN mkdir ${BUILD_DIR}
 WORKDIR ${BUILD_DIR}
@@ -33,11 +35,13 @@ ENV FLATNOTES_PORT=8080
 ENV APP_PATH=/app
 ENV FLATNOTES_PATH=/data
 
-# Создаем пользователя container с домашним каталогом /home/container
-RUN useradd -m -d /home/container container
-
-# Создаем необходимые каталоги
-RUN mkdir -p ${APP_PATH} ${FLATNOTES_PATH}
+# Create container user with home directory
+RUN groupadd -g 1000 container && \
+    useradd -u 1000 -g container -d /home/container -m container && \
+    mkdir -p ${APP_PATH} && \
+    mkdir -p ${FLATNOTES_PATH} && \
+    chown container:container ${APP_PATH} && \
+    chown container:container ${FLATNOTES_PATH}
 
 RUN apt update && apt install -y \
     curl \
@@ -48,24 +52,19 @@ RUN pip install --no-cache-dir pipenv
 
 WORKDIR ${APP_PATH}
 
-COPY LICENSE Pipfile Pipfile.lock ./ 
+COPY LICENSE Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile --system && \
     pipenv --clear
 
 COPY server ./server
 COPY --from=build --chmod=777 ${BUILD_DIR}/client/dist ./client/dist
 
-COPY entrypoint.sh healthcheck.sh / 
+COPY entrypoint.sh healthcheck.sh /
 RUN chmod +x /entrypoint.sh /healthcheck.sh
-
-# Устанавливаем владельца каталогов
-RUN chown -R container:container /home/container /app /data
-
-# Устанавливаем пользователя container
-USER container
 
 VOLUME /data
 EXPOSE ${FLATNOTES_PORT}/tcp
 HEALTHCHECK --interval=60s --timeout=10s CMD /healthcheck.sh
 
+USER container
 ENTRYPOINT [ "/entrypoint.sh" ]
